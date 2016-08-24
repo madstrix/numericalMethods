@@ -3,95 +3,148 @@ package xyz.madstrix.numericalMethods;
 import static java.lang.Math.*;
 
 /**
- * @author MaDStriX
- * @author madstrix@ya.ru
+ * Получает на вход массив значений некой функции (inputYArray) и расчитывает интерполяционную кривую
+ * на промежутке [a, b] с шагом step.
+ * @author madstrix
+ * @since 25.08.2016
  */
-public class FourierInterpolation {
+public class FourierInterpolation{
 
-    private final double a;     //начало интервала интерполяции
-    private final double b;     //конец интервала интерполяции
-    private double T;           //интервал интерполяции
-    private double step;        //шаг
-    private double My[];        //массив с узлами
-    private double Fy[];        //масив с точками интерполированой функции
-    private double Fx[];        //масив с точками интерполированой функции
+    /**
+     * начало интервала интерполяции
+     */
+    private final double a;
+    /**
+     * конец интервала интерполяции
+     */
+    private final double b;
+    /**
+     * интервал интерполяции
+     */
+    private double T;
+    /**
+     * шаг итератора
+     */
+    private double step;
+    /**
+     * массив с узлами для интерполяции
+     */
+    private double[] inputYArray;
+    /**
+     * аргумент интерполяционной функции
+     */
+    private double outputX;
+    /**
+     * значение интерполяционной функции
+     */
+    private double outputY;
+    /**
+     * массив с аргументами интерполяционной функции
+     */
+    private double[] outputXArray;
+    /**
+     * массив со значениями интерполяционной функции
+     */
+    private double[] outputYArray;
 
-    //конструктор с параметрами интерполирования
-    public FourierInterpolation(double a, double b, double step, double My[]) {
+
+    /**
+     * @param a начало интервала интеграции
+     * @param b конец игтервала интеграции
+     * @param step шаг игтеграции
+     * @param inputYArray массив с входящими данными
+     */
+    public FourierInterpolation(double a, double b, double step, double inputYArray[]) {
 
         this.a = a;
         this.b = b;
         this.step = step;
-        this.My = My;
-
+        this.inputYArray = inputYArray;
         T = b - a;
+        int n = (int) (T / step)+1;
+        outputX = 0;
+        outputY = 0;
+        outputXArray = new double[n];
+        outputYArray = new double[n];
 
     }
 
-    //дискретное преобразование Фурье(коэф. a)
-    private double a (int j){
+    /**
+     * дискретное преобразование Фурье(коэф. a)
+     * @param j
+     * @return a
+     */
+    private double fourierA(int j){
+
         double a = 0;
 
-        for (int k = 0; k < My.length; k++) {
-
-            a += My[k]*cos(2*j*PI*k/My.length);
-
+        for (int k = 0; k < inputYArray.length; k++) {
+            a += inputYArray[k]*cos(2*j*PI*k/ inputYArray.length);
         }
 
-        a = a * 2 / My.length;
+        a = a * 2 / inputYArray.length;
         return a;
     }
 
-    //дискретное преобразование Фурье(коэф. a)
-    private double b (int j){
+    /**
+     * дискретное преобразование Фурье(коэф. b)
+     * @param j
+     * @return b
+     */
+    private double fourierB(int j){
+
         double b = 0;
 
-        for (int k = 0; k < My.length; k++) {
-
-            b += My[k]*sin(2*j*PI*k/My.length);
-
+        for (int k = 0; k < inputYArray.length; k++) {
+            b += inputYArray[k]*sin(2*j*PI*k/ inputYArray.length);
         }
 
-        b = b * 2 / My.length;
+        b = b * 2 / inputYArray.length;
         return b;
     }
 
-    //вычисление значения интерполированной функции в точке x
-    public double getFourierInterpolationDot (double x){
+    /**
+     * вычисление значения интерполированной функции в точке outputX и помещает значение в outputY
+     */
+    public void calculateDot (){
 
-        double f = 0;
+        outputY = 0;
 
-        for (int j=1; j<= My.length/2; j++) {
-
-            f += a(j) * cos(j * 2 * PI * x / T) + b(j) * sin(j * 2 * PI * x / T);
-
+        for (int j = 1; j<= inputYArray.length/2; j++) {
+            outputY += fourierA(j) * cos(j * 2 * PI * outputX / T) + fourierB(j) * sin(j * 2 * PI * outputX / T);
         }
-
-        return f;
 
     }
 
-    //создание массива с точками интерполированной функции на интервале [a, b]
-    public void makeFourierInterpolationArray () {
+    /**
+     * создание массива с точками интерполированной функции на интервале [a, b]
+     */
+    public void calculateArray () {
 
-        int n = (int) (T / step)+1;
-
-        Fy = new double[n];
-        Fx = new double[n];
         int i = 0;
 
-        for (double x = a; x <= b; x += step) {
-            Fy[i] = getFourierInterpolationDot(x);
-            Fx[i] = x;
+        for (outputX = a; outputX <= b; outputX += step) {
+            calculateDot();
+            outputXArray[i] = outputX;
+            outputYArray[i] = outputY;
             i++;
         }
     }
 
-    //геттер массива с y-точками
-    public double[] getFourierInterpolationArrayOfY () { return Fy; }
+    public double getOutputX() {
+        return outputX;
+    }
 
-    //геттер массива с x-точками
-    public double[] getFourierInterpolationArrayOfX () { return Fx; }
+    public double getOutputY() {
+        return outputY;
+    }
 
+    public double[] getOutputXArray() {
+        return outputXArray;
+    }
+
+    public double[] getOutputYArray() {
+        return outputYArray;
+    }
 
 }
