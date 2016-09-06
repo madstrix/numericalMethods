@@ -1,16 +1,25 @@
 package xyz.madstrix.numericalMethods;
 
+/**
+ * Реализует алгоритм решения обыкновенных дифференциальных уравнений методами Эйлера и Рунге-Кутты 4 порядка
+ * Получает в конструкторе шаг (step).
+ * Начальные x и y задаются через сеттеры или по умолчанию равны 0.001.
+ * @author madstrix
+ * @since 2.09.2016
+ */
 public abstract class NumericalSchemes {
 
-    private final double h;
-    private final int t_max;
+    private final double step;
     private double x;
     private double y;
 
-    NumericalSchemes(int t_max, double h){
+    /**
+     * Конструктор класса
+     * @param step шаг итераций
+     */
+    public NumericalSchemes(double step){
 
-        this.h = h;
-        this.t_max = t_max;
+        this.step = step;
 
         x = 0.001;
         y = 0.001;
@@ -33,25 +42,34 @@ public abstract class NumericalSchemes {
         return x;
     }
 
-    public double[][] calculateRK4 () {
+    /**
+     * Рассчитывает массив размера tMax со значениями (x, y) от начальных (x, y) методом Рунге-Кутты 4 порядка
+     * @param tMax максимальное колличество итерация от заданного x
+     * @return
+     */
+    public double[][] calculateRK4Array (int tMax) {
 
-        double[][] Result = new double[2][t_max];
+        double[][] Result = new double[2][tMax];
 
-        for (int t = 0; t < t_max; t++) {
+        for (int t = 0; t < tMax; t++) {
             rk();
             Result[0][t] = x;
             Result[1][t] = y;
         }
 
         return Result;
-
     }
 
-    public double[][] calculateEulier() {
+    /**
+     * Рассчитывает массив размера tMax со значениями (x, y) от начальных (x, y) методом Эйлера
+     * @param tMax максимальное колличество итерация от заданного x
+     * @return
+     */
+    public double[][] calculateEulierArray (int tMax) {
 
-        double[][] Result = new double[2][t_max];
+        double[][] Result = new double[2][tMax];
 
-        for (int t = 0; t < t_max; t++){
+        for (int t = 0; t < tMax; t++){
             eulier();
             Result[0][t] = x;
             Result[1][t] = y;
@@ -68,17 +86,17 @@ public abstract class NumericalSchemes {
                 k21, k22, k23, k24,
                 dx, dy;
 
-        k11 = h* firstPartFunction(x, y);
-        k21 = h* secondPartFunction(x, y);
+        k11 = step * firstPartFunction(x, y);
+        k21 = step * secondPartFunction(x, y);
 
-        k12 = h* firstPartFunction(x+k11/2, y+k21/2);
-        k22 = h* secondPartFunction(x+k11/2, y+k21/2);
+        k12 = step * firstPartFunction(x+k11/2, y+k21/2);
+        k22 = step * secondPartFunction(x+k11/2, y+k21/2);
 
-        k13 = h* firstPartFunction(x+k12/2, y+k22/2);
-        k23 = h* secondPartFunction(x+k12/2, y+k22/2);
+        k13 = step * firstPartFunction(x+k12/2, y+k22/2);
+        k23 = step * secondPartFunction(x+k12/2, y+k22/2);
 
-        k14 = h* firstPartFunction(x+k13/2, y+k23/2);
-        k24 = h* secondPartFunction(x+k13/2, y+k23/2);
+        k14 = step * firstPartFunction(x+k13/2, y+k23/2);
+        k24 = step * secondPartFunction(x+k13/2, y+k23/2);
 
         dx = (k11+2*k12+2*k13+k14)/6;
         dy = (k21+2*k22+2*k23+k24)/6;
@@ -92,13 +110,20 @@ public abstract class NumericalSchemes {
 
         double dx, dy;
 
-        dx = h* firstPartFunction(x, y);
-        dy = h* secondPartFunction(x, y);
+        dx = step * firstPartFunction(x, y);
+        dy = step * secondPartFunction(x, y);
 
-        x = x + dx;
-        y = y + dy;
+        x += dx;
+        y += dy;
 
     }
+
+    /**
+     * Абстрактные медоды, в которых нужно реализовать левую (firstPart) и правую (secondPart) части уравнения.
+     * @param x
+     * @param y
+     * @return
+     */
     public abstract double firstPartFunction(double x, double y);
     public abstract double secondPartFunction(double x, double y);
 
